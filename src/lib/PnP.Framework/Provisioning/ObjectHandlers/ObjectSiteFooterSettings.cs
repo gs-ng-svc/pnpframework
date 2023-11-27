@@ -459,7 +459,8 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                                 var newParentNode = menuNode.Children.Add(new NavigationNodeCreationInformation()
                                 {
                                     Url = ObjectNavigation.ReplaceFileUniqueToken(web, parser.ParseString(footerLink.Url)),
-                                    Title = parser.ParseString(footerLink.DisplayName)
+                                    Title = parser.ParseString(footerLink.DisplayName),
+                                    IsExternal = true
                                 });
 
                                 if (footerLink.DisplayName.ContainsResourceToken())
@@ -475,7 +476,8 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                                         var newChildNode = newParentNode.Children.Add(new NavigationNodeCreationInformation()
                                         {
                                             Url = parser.ParseString(childFooterLink.Url),
-                                            Title = parser.ParseString(childFooterLink.DisplayName)
+                                            Title = parser.ParseString(childFooterLink.DisplayName),
+                                            IsExternal = true
                                         });
 
                                         if (childFooterLink.DisplayName.ContainsResourceToken())
