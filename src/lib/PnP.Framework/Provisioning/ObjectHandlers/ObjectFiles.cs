@@ -93,10 +93,10 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                     folder.EnsureProperties(p => p.UniqueId, p => p.ServerRelativeUrl);
                     parser.AddToken(new FileUniqueIdToken(web, folder.ServerRelativeUrl.Substring(web.ServerRelativeUrl.Length).TrimStart("/".ToCharArray()), folder.UniqueId));
                     parser.AddToken(new FileUniqueIdEncodedToken(web, folder.ServerRelativeUrl.Substring(web.ServerRelativeUrl.Length).TrimStart("/".ToCharArray()), folder.UniqueId));
-                    
+
                     var checkedOut = false;
 
-                    var targetFile = folder.GetFile(template.Connector.GetFilenamePart(targetFileName));
+                    var targetFile = folder.GetFile(System.Web.HttpUtility.UrlDecode(template.Connector.GetFilenamePart(targetFileName)));
 
                     if (targetFile != null)
                     {
@@ -107,7 +107,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
 
                             using (var stream = FileUtilities.GetFileStream(template, file))
                             {
-                                targetFile = UploadFile(folder, stream, targetFileName, file.Overwrite);
+                                targetFile = UploadFile(folder, stream, System.Web.HttpUtility.UrlDecode(targetFileName), file.Overwrite);
                             }
                         }
                         else
@@ -126,7 +126,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                             else
                             {
                                 scope.LogDebug(CoreResources.Provisioning_ObjectHandlers_Files_Uploading_file__0_, targetFileName);
-                                targetFile = UploadFile(folder, stream, targetFileName, file.Overwrite);
+                                targetFile = UploadFile(folder, stream, System.Web.HttpUtility.UrlDecode(targetFileName), file.Overwrite);
                             }
                         }
 
