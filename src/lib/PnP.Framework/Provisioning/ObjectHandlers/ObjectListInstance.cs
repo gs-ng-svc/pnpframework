@@ -27,7 +27,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
     internal class ObjectListInstance : ObjectHandlerBase
     {
         private readonly FieldAndListProvisioningStepHelper.Step step;
-        
+
         public override string Name
         {
 #if DEBUG
@@ -214,7 +214,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                         foreach (var listInfo in processedLists)
                         {
                             var defaultFolderValues = new List<Entities.IDefaultColumnValue>();
-                            
+
                             ProcessDefaultFolders(web, listInfo, listInfo.TemplateList.DefaultColumnValues, listInfo.TemplateList.Folders, string.Empty, defaultFolderValues, parser);
 
                             if (defaultFolderValues.Any())
@@ -269,7 +269,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
             return parser;
         }
 
-        private static void ProcessDefaultFolders(Web web, ListInfo listInfo,  Dictionary<string,string> defaultColumnValues, IEnumerable<Model.Folder> folders, string folderName,
+        private static void ProcessDefaultFolders(Web web, ListInfo listInfo, Dictionary<string, string> defaultColumnValues, IEnumerable<Model.Folder> folders, string folderName,
             List<IDefaultColumnValue> defaultFolderValues, TokenParser parser)
         {
             foreach (KeyValuePair<string, string> columnValue in defaultColumnValues)
@@ -280,13 +280,13 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                 {
                     var field = listInfo.SiteList.Fields.GetByInternalNameOrTitle(fieldName);
                     field.EnsureProperties(f => f.TypeAsString);
-                    
+
                     var value = field.TypeAsString is "TaxonomyFieldType" or "TaxonomyFieldTypeMulti"
                         ? TermIdsToProcess(fieldValue).ToArray()
                         : new string[] { fieldValue };
-                    
-                        var defaultValue = field.GetDefaultColumnValueFromField((ClientContext)web.Context, folderName, value);
-                        defaultFolderValues.Add(defaultValue);
+
+                    var defaultValue = field.GetDefaultColumnValueFromField((ClientContext)web.Context, folderName, value);
+                    defaultFolderValues.Add(defaultValue);
                 }
             }
             foreach (var folder in folders)
@@ -302,7 +302,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
             if (terms.Length == 1) return terms.ToList();
 
             var termDefaultValuesParsed = new List<string>();
-            
+
             for (int q = 0; q < terms.Length; q += 2)
             {
                 var splitData = terms[q + 1].Split(new char[] { '|' });
@@ -1670,14 +1670,14 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                             listContentType = list.ContentTypes.GetById(existingContentTypeId.StringValue);
                         }
                         else
-                        {                            
+                        {
                             // Add the content type
                             listContentType = list.ContentTypes.AddExistingContentType(tempCT);
                         }
                         web.Context.Load(listContentType, ct => ct.Id, ct => ct.Name);
                         web.Context.ExecuteQueryRetry();
                         parser.AddToken(new ListContentTypeIdToken(web, list.Title, listContentType));
-                        
+
                         if (ctb.Default && defaultContentType == null)
                         {
                             defaultContentType = listContentType;
@@ -2102,7 +2102,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
             String targetFolderName = parser.ParseString(folder.Name);
             list.SiteList.ParentWeb.EnsureProperties(w => w.ServerRelativeUrl);
 
-            if (targetFolderName == "/" )
+            if (targetFolderName == "/")
             {
                 // Handle any child-folder
                 if (folder.Folders != null && folder.Folders.Count > 0)
@@ -2204,7 +2204,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                         currentFolderItem.UpdateOverwriteVersion();
                         currentFolder.Update();
                         parentFolder.Context.ExecuteQueryRetry();
-                                 
+
                     }
                     catch (ServerException srex)
                     {
@@ -2253,7 +2253,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                             throw;
                     }
                 }
-                
+
                 //Set Moderation status of Folder
                 //Doing it in a different request, because SharePoint doesn't allow to update properties at the same time that other properties
                 if (list.SiteList.EnableModeration && folder.Properties != null && folder.Properties.Any(p => p.Key.Equals("_ModerationStatus")))
@@ -2283,7 +2283,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                         else
                             throw;
                     }
-                    
+
                 }
             }
         }
@@ -2569,7 +2569,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                     list = ExtractInformationRightsManagement(web, siteList, list, creationInfo, template);
 
                     list = ExtractPropertyBagEntries(siteList, list);
-                                        
+
                     if (baseTemplateList != null)
                     {
                         // do we plan to extract items from this list?
@@ -2832,7 +2832,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                         }
                     }
 
-                    if(field.InternalName == Constants.ModernAudienceTargetingInternalName || field.InternalName == Constants.ModernAudienceTargetingMultiLookupInternalName)
+                    if (field.InternalName == Constants.ModernAudienceTargetingInternalName || field.InternalName == Constants.ModernAudienceTargetingMultiLookupInternalName)
                     {
                         //Modern Audience Targeting
                         list.EnableAudienceTargeting = true;
@@ -2850,7 +2850,7 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
                         var fieldTitle = field.Title;
                         if (creationInfo.PersistMultiLanguageResources)
                         {
-                            var escapedFieldTitle = siteList.Title.Replace(" ", "_")+"_"+field.Title.Replace(" ", "_");
+                            var escapedFieldTitle = siteList.Title.Replace(" ", "_") + "_" + field.Title.Replace(" ", "_");
                             if (UserResourceExtensions.PersistResourceValue(field.TitleResource, $"Field_{escapedFieldTitle}_DisplayName", template, creationInfo))
                             {
                                 fieldTitle = $"{{res:Field_{escapedFieldTitle}_DisplayName}}";
@@ -2957,16 +2957,27 @@ namespace PnP.Framework.Provisioning.ObjectHandlers
 
                     if (field.TypeAsString.StartsWith("TaxonomyField"))
                     {
-                        // find the corresponding taxonomy container text field and include it too
-                        var taxField = (TaxonomyField)field;
-                        taxField.EnsureProperties(f => f.TextField, f => f.Id);
+                        TaxonomyField taxField = null;
+                        try
+                        {
+                            // find the corresponding taxonomy container text field and include it too
+                            taxField = (TaxonomyField)field;
+                        }
+                        catch (InvalidCastException)
+                        {
+                            WriteMessage($"skip field {field.InternalName}", ProvisioningMessageType.Warning);
+                        }
+                        if (taxField != null)
+                        {
+                            taxField.EnsureProperties(f => f.TextField, f => f.Id);
 
-                        var noteField = siteList.Fields.GetById(taxField.TextField);
-                        web.Context.Load(noteField, nf => nf.SchemaXml);
-                        web.Context.ExecuteQueryRetry();
-                        var noteSchemaXml = XElement.Parse(noteField.SchemaXml);
-                        noteSchemaXml.Attribute("SourceID")?.Remove();
-                        list.Fields.Insert(0, new Model.Field { SchemaXml = ParseFieldSchema(noteSchemaXml.ToString(), web, lists) });
+                            var noteField = siteList.Fields.GetById(taxField.TextField);
+                            web.Context.Load(noteField, nf => nf.SchemaXml);
+                            web.Context.ExecuteQueryRetry();
+                            var noteSchemaXml = XElement.Parse(noteField.SchemaXml);
+                            noteSchemaXml.Attribute("SourceID")?.Remove();
+                            list.Fields.Insert(0, new Model.Field { SchemaXml = ParseFieldSchema(noteSchemaXml.ToString(), web, lists) });
+                        }
                     }
                 }
             }
